@@ -1,0 +1,107 @@
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Scanner;
+
+// Book class to represent a book in the library
+class Book {
+    private String title;
+    private String author;
+    private boolean isLent;
+
+    public Book(String title, String author) {
+        this.title = title;
+        this.author = author;
+        this.isLent = false;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public boolean isLent() {
+        return isLent;
+    }
+
+    public void lend() {
+        this.isLent = true;
+    }
+
+    public void returnBook() {
+        this.isLent = false;
+    }
+
+    @Override
+    public String toString() {
+        return "Title: " + title + ", Author: " + author + ", Available: " + (!isLent);
+    }
+}
+
+// Library class to manage the collection of books
+class Library {
+    private ArrayList<Book> books;
+
+    public Library() {
+        books = new ArrayList<>();
+    }
+
+    public void addBook(String title, String author) {
+        books.add(new Book(title, author));
+        System.out.println("Book added successfully.");
+    }
+
+    public void listBooks() {
+        if (books.isEmpty()) {
+            System.out.println("No books available in the library.");
+        } else {
+            for (int i = 0; i < books.size(); i++) {
+                System.out.println((i + 1) + ". " + books.get(i));
+            }
+        }
+    }
+
+    public void lendBook(String title) {
+        for (Book book : books) {
+            if (book.getTitle().equalsIgnoreCase(title)) {
+                if (!book.isLent()) {
+                    book.lend();
+                    System.out.println("Book lent successfully.");
+                } else {
+                    System.out.println("Book is currently lent out.");
+                }
+                return;
+            }
+        }
+        System.out.println("Book not found.");
+    }
+
+    public void returnBook(String title) {
+        for (Book book : books) {
+            if (book.getTitle().equalsIgnoreCase(title)) {
+                if (book.isLent()) {
+                    book.returnBook();
+                    System.out.println("Book returned successfully.");
+                } else {
+                    System.out.println("This book wasn't lent out.");
+                }
+                return;
+            }
+        }
+        System.out.println("Book not found.");
+    }
+}
+
+// Main class to run the Library Management System
+public class LibraryManagementSystem {
+    public static void main(String[] args) {
+        Library library = new Library();
+        Scanner scanner = new Scanner(System.in);
+        String title, author;
+        int choice;
+
+        do {
+            System.out.println("\nLibrary Management System");
+            System.out.println("
