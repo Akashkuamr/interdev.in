@@ -1,0 +1,147 @@
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+
+public class BrickBreaker extends JPanel implements ActionListener, KeyListener {
+    private static final long serialVersionUID = 1L;
+
+    private Timer timer;
+    private final int WIDTH = 400, HEIGHT = 600;
+    private final int PADDLE_WIDTH = 60, PADDLE_HEIGHT = 10;
+    private final int BALL_SIZE = 10;
+    private final int BRICK_WIDTH = 40, BRICK_HEIGHT = 20;
+    private int paddleX, ballX, ballY, ballXSpeed, ballYSpeed;
+    private boolean leftPressed, rightPressed;
+    private final int[][] bricks;
+    private boolean[] brickVisible;
+
+    public BrickBreaker() {
+        timer = new Timer(10, this);
+        timer.start();
+
+        paddleX = WIDTH / 2 - PADDLE_WIDTH / 2;
+        ballX = WIDTH / 2;
+        ballY = HEIGHT / 2;
+        ballXSpeed = 2;
+        ballYSpeed = -2;
+
+        bricks = new int[5][8];
+        brickVisible = new boolean[40];
+        for (int i = 0; i < 5; i++) {
+            for (int j = 0; j < 8; j++) {
+                bricks[i][j] = 1;
+                brickVisible[i * 8 + j] = true;
+            }
+        }
+
+        addKeyListener(this);
+        setFocusable(true);
+        setPreferredSize(new Dimension(WIDTH, HEIGHT));
+    }
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        g.setColor(Color.BLACK);
+        g.fillRect(0, 0, WIDTH, HEIGHT);
+        
+        // Draw paddle
+        g.setColor(Color.GREEN);
+        g.fillRect(paddleX, HEIGHT - PADDLE_HEIGHT, PADDLE_WIDTH, PADDLE_HEIGHT);
+
+        // Draw ball
+        g.setColor(Color.RED);
+        g.fillOval(ballX, ballY, BALL_SIZE, BALL_SIZE);
+
+        // Draw bricks
+        g.setColor(Color.BLUE);
+        for (int i = 0; i < 5; i++) {
+            for (int j = 0; j < 8; j++) {
+                if (brickVisible[i * 8 + j]) {
+                    g.fillRect(j * BRICK_WIDTH, i * BRICK_HEIGHT, BRICK_WIDTH, BRICK_HEIGHT);
+                }
+            }
+        }
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        if (leftPressed && paddleX > 0) {
+            paddleX -= 5;
+        }
+        if (rightPressed && paddleX < WIDTH - PADDLE_WIDTH) {
+            paddleX += 5;
+        }
+
+        ballX += ballXSpeed;
+        ballY += ballYSpeed;
+
+        // Ball collision with walls
+        if (ballX < 0 || ballX > WIDTH - BALL_SIZE) {
+            ballXSpeed = -ballXSpeed;
+        }
+        if (ballY < 0) {
+            ballYSpeed = -ballYSpeed;
+        }
+
+        // Ball collision with paddle
+        if (ballY > HEIGHT - PADDLE_HEIGHT - BALL_SIZE && ballX > paddleX && ballX < paddleX + PADDLE_WIDTH) {
+            ballYSpeed = -ballYSpeed;
+        }
+
+        // Ball collision with bricks
+        for (int i = 0; i < 5; i++) {
+            for (int j = 0; j < 8; j++) {
+                if (brickVisible[i * 8 + j] && ballX > j * BRICK_WIDTH - BALL_SIZE && ballX < (j + 1) * BRICK_WIDTH && ballY > i * BRICK_HEIGHT - BALL_SIZE && ballY < (i + 1) * BRICK_HEIGHT) {
+                    ballYSpeed = -ballYSpeed;
+                    brickVisible[i * 8 + j] = false;
+                }
+            }
+        }
+
+        // Check if ball fell below paddle
+        if (ballY > HEIGHT) {
+            timer.stop();
+            JOptionPane.showMessageDialog(this, "Game Over");
+            System.exit(0);
+        }
+
+        repaint();
+    }
+
+    @Override
+    public void keyTyped(KeyEvent e) {}
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+        if (e.getKeyCode() == KeyEvent.VK_LEFT) {
+            leftPressed = true;
+        }
+        if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
+            rightPressed = true;
+        }
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+        if (e.getKeyCode() == KeyEvent.VK_LEFT) {
+            leftPressed = false;
+        }
+        if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
+            rightPressed = false;
+        }
+    }
+
+    public static void main(String[] args) {
+        JFrame frame = new JFrame("Brick Breaker");
+        BrickBreaker game = new BrickBreaker();
+        frame.add(game);
+        frame.pack();
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setVisible(true);
+    }
+}
